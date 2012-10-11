@@ -19,11 +19,11 @@ func TestStringMinMust(t *testing.T) {
 	}
 	ex, err := sanitize.New(scheme1)
 	if err != nil {
-		t.Fail()
+		t.Fatal()
 	}
 	_, err = ex.Extract(dat)
 	if err == nil {
-		t.Fail()
+		t.Fatal()
 	}
 }
 
@@ -40,11 +40,11 @@ func TestStringMaxMust(t *testing.T) {
 	}
 	ex, err := sanitize.New(scheme1)
 	if err != nil {
-		t.Fail()
+		t.Fatal()
 	}
 	_, err = ex.Extract(dat)
 	if err == nil {
-		t.Fail()
+		t.Fatal()
 	}
 }
 
@@ -60,11 +60,11 @@ func TestStringMin(t *testing.T) {
 	}
 	ex, err := sanitize.New(scheme1)
 	if err != nil {
-		t.Fail()
+		t.Fatal()
 	}
 	val, err := ex.Extract(dat)
 	if err != nil || len(val) != 0 {
-		t.Fail()
+		t.Fatal()
 	}
 }
 
@@ -80,11 +80,11 @@ func TestStringMax(t *testing.T) {
 	}
 	ex, err := sanitize.New(scheme1)
 	if err != nil {
-		t.Fail()
+		t.Fatal()
 	}
 	val, err := ex.Extract(dat)
 	if err != nil || len(val) != 0 {
-		t.Fail()
+		t.Fatal()
 	}
 }
 
@@ -101,11 +101,11 @@ func TestIntMust(t *testing.T) {
 	}
 	ex, err := sanitize.New(scheme1)
 	if err != nil {
-		t.Fail()
+		t.Fatal()
 	}
 	_, err = ex.Extract(dat)
 	if err == nil {
-		t.Fail()
+		t.Fatal()
 	}
 }
 
@@ -121,11 +121,11 @@ func TestInt(t *testing.T) {
 	}
 	ex, err := sanitize.New(scheme1)
 	if err != nil {
-		t.Fail()
+		t.Fatal()
 	}
 	val, err := ex.Extract(dat)
 	if err != nil || len(val) != 0 {
-		t.Fail()
+		t.Fatal()
 	}
 }
 
@@ -142,11 +142,11 @@ func TestIntMax(t *testing.T) {
 	}
 	ex, err := sanitize.New(scheme1)
 	if err != nil {
-		t.Fail()
+		t.Fatal()
 	}
 	_, err = ex.Extract(dat)
 	if err == nil {
-		t.Fail()
+		t.Fatal()
 	}
 }
 
@@ -163,11 +163,11 @@ func TestMin(t *testing.T) {
 	}
 	ex, err := sanitize.New(scheme1)
 	if err != nil {
-		t.Fail()
+		t.Fatal()
 	}
 	_, err = ex.Extract(dat)
 	if err == nil {
-		t.Fail()
+		t.Fatal()
 	}
 }
 
@@ -183,11 +183,11 @@ func TestFloatMust(t *testing.T) {
 	}
 	ex, err := sanitize.New(scheme1)
 	if err != nil {
-		t.Fail()
+		t.Fatal()
 	}
 	_, err = ex.Extract(dat)
 	if err == nil {
-		t.Fail()
+		t.Fatal()
 	}
 }
 
@@ -203,11 +203,11 @@ func TestBoolMust(t *testing.T) {
 	}
 	ex, err := sanitize.New(scheme1)
 	if err != nil {
-		t.Fail()
+		t.Fatal()
 	}
 	_, err = ex.Extract(dat)
 	if err == nil {
-		t.Fail()
+		t.Fatal()
 	}
 }
 
@@ -232,11 +232,11 @@ func TestComposite(t *testing.T) {
 	}
 	ex, err := sanitize.New(scheme1)
 	if err != nil {
-		t.Fail()
+		t.Fatal()
 	}
 	val, err := ex.Extract(dat)
 	if err != nil || len(val) != 2 {
-		t.Fail()
+		t.Fatal()
 	}
 }
 
@@ -252,7 +252,7 @@ func TestUserDefinedType(t *testing.T) {
 	}
 	ex, err := sanitize.New(scheme1)
 	if err != nil {
-		t.Fail()
+		t.Fatal()
 	}
 	ex.AddFuncs(sanitize.FuncMap{
 		"myType": func(dat interface{}, s sanitize.Scheme) (interface{}, error) {
@@ -268,6 +268,69 @@ func TestUserDefinedType(t *testing.T) {
 	})
 	_, err = ex.Extract(dat)
 	if err == nil {
-		t.Fail()
-	} 
+		t.Fatal()
+	}
+}
+
+func TestSlice(t *testing.T) {
+	dat := map[string]interface{}{
+		"a": []interface{}{30, 20, "xxd"},
+	}
+	scheme1 := map[string]interface{}{
+		"a": map[string]interface{}{
+			"type": 	"string",
+			"slice": 	true,
+		},
+	}
+	ex, err := sanitize.New(scheme1)
+	if err != nil {
+		t.Fatal()
+	}
+	val, err := ex.Extract(dat)
+	if err != nil || len(val["a"].([]interface{})) != 1 {
+		t.Fatal()
+	}
+}
+
+func TestSliceMustAllOrNothing(t *testing.T) {
+	dat := map[string]interface{}{
+		"a": []interface{}{30, 20, "xxd"},
+	}
+	scheme1 := map[string]interface{}{
+		"a": map[string]interface{}{
+			"type": 		"string",
+			"slice":		true,
+			"allOrNothing": true,
+			"must":			true,
+		},
+	}
+	ex, err := sanitize.New(scheme1)
+	if err != nil {
+		t.Fatal()
+	}
+	_, err = ex.Extract(dat)
+	if err == nil {
+		t.Fatal()
+	}
+}
+
+func TestShorthand(t *testing.T) {
+	dat := map[string]interface{}{
+		"a": 1,
+		"b": "asdsad",
+		"c": "Hello.",
+	}
+	scheme1 := map[string]interface{}{
+		"a": 1,
+		"b": 1,
+		"c": 1,
+	}
+	ex, err := sanitize.New(scheme1)
+	if err != nil {
+		t.Fatal()
+	}
+	val, err := ex.Extract(dat)
+	if err != nil || len(val) != 2 {
+		t.Fatal()
+	}
 }

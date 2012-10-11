@@ -21,10 +21,19 @@ type Scheme struct {
 
 type SchemeMap map[string]Scheme
 
-func toScheme(a map[string]interface{}) Scheme {
+func toScheme(a interface{}) (Scheme, error) {
 	s := Scheme{}
 	s.Specific = map[string]interface{}{}
-	for i, v := range a {
+	ai, err := numcon.Int(a)
+	if err == nil && ai == 1 {
+		s.Type = "string"
+		return s, nil
+	}
+	am, ok := a.(map[string]interface{})
+	if !ok {
+		return s, fmt.Errorf("Can't interpret scheme.")
+	}
+	for i, v := range am {
 		switch i {
 		case "must":
 			s.Must = v.(bool)
@@ -48,15 +57,19 @@ func toScheme(a map[string]interface{}) Scheme {
 			s.Specific[i] = v
 		}
 	}
-	return s
+	return s, nil
 }
 
-func toSchemeMap(a map[string]interface{}) SchemeMap {
+func toSchemeMap(a map[string]interface{}) (SchemeMap, error) {
 	s := SchemeMap{}
 	for i, v := range a {
-		s[i] = toScheme(v.(map[string]interface{}))
+		val, err := toScheme(v)
+		if err != nil {
+			return nil, err
+		}
+		s[i] = val
 	}
-	return s
+	return s, nil
 }
 
 type FuncMap map[string]func(interface{}, Scheme) (interface{}, error)
@@ -145,7 +158,10 @@ func inter(dat interface{}, s Scheme) (interface{}, error) {
 }
 
 func New(scheme_map map[string]interface{}) (*Extractor, error) {
-	schemeMap := toSchemeMap(scheme_map)
+	schemeMap, err := toSchemeMap(scheme_map)
+	if err != nil {
+		return nil, err
+	}
 	funcMap := map[string]func(interface{}, Scheme)(interface{}, error) {
 		"string": 	stringer,
 		"float":	floater,
