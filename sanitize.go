@@ -17,6 +17,7 @@ type Scheme struct {
 	Max				int64
 	Regexp			string
 	Specific		map[string]interface{}
+	Key				string		// Only field not suppliable, it's just metainformation for validation handlers.
 }
 
 type SchemeMap map[string]Scheme
@@ -67,6 +68,7 @@ func toSchemeMap(a map[string]interface{}) (SchemeMap, error) {
 		if err != nil {
 			return nil, err
 		}
+		val.Key = i
 		s[i] = val
 	}
 	return s, nil
