@@ -16,6 +16,8 @@ type Scheme struct {
 	Min				int64
 	Max				int64
 	Regexp			string
+	// Below things are for supporting hackish things.
+	Ignore			bool
 	Specific		map[string]interface{}
 	Key				string		// Only field not suppliable, it's just metainformation for validation handlers.
 }
@@ -54,6 +56,8 @@ func toScheme(a interface{}) (Scheme, error) {
 			s.Max = numcon.Int64P(v)
 		case "regexp":
 			s.Regexp = v.(string)
+		case "ignore":
+			s.Ignore = v.(bool)
 		default:
 			s.Specific[i] = v
 		}
@@ -213,7 +217,9 @@ func (e *Extractor) Extract(data map[string]interface{}) (map[string]interface{}
 					continue
 				}
 			}
-			ret[i] = f
+			if !v.Ignore {
+				ret[i] = f
+			}
 		} else {
 			val, err := c_func(current, v)
 			if err != nil {
@@ -223,7 +229,9 @@ func (e *Extractor) Extract(data map[string]interface{}) (map[string]interface{}
 					continue
 				}
 			}
-			ret[i] = val
+			if !v.Ignore {
+				ret[i] = val
+			}
 		}
 	}
 	return ret, nil

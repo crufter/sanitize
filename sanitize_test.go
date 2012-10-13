@@ -314,7 +314,7 @@ func TestSliceMustAllOrNothing(t *testing.T) {
 	}
 }
 
-func TestShorthand(t *testing.T) {
+func TestShorthand1(t *testing.T) {
 	dat := map[string]interface{}{
 		"a": 1,
 		"b": "asdsad",
@@ -331,6 +331,56 @@ func TestShorthand(t *testing.T) {
 	}
 	val, err := ex.Extract(dat)
 	if err != nil || len(val) != 2 {
+		t.Fatal()
+	}
+}
+
+func TestIgnore(t *testing.T) {
+	dat := map[string]interface{}{
+		"a": "asdsadasd",
+		"b": "asdsad",
+		"c": "Hello.",
+	}
+	scheme1 := map[string]interface{}{
+		"a": map[string]interface{}{
+			"type": 	"string",
+			"ignore":	true,
+		},
+		"b": 1,
+		"c": 1,
+	}
+	ex, err := sanitize.New(scheme1)
+	if err != nil {
+		t.Fatal()
+	}
+	val, err := ex.Extract(dat)
+	if err != nil || len(val) != 2 {
+		t.Fatal()
+	}
+}
+
+func TestIgnoreMust(t *testing.T) {
+	dat := map[string]interface{}{
+		"a": "asdsadasd",
+		"b": "asdsad",
+		"c": "Hello.",
+	}
+	scheme1 := map[string]interface{}{
+		"a": map[string]interface{}{
+			"type": 	"string",
+			"ignore":	true,
+			"min":		1000,
+			"must":		true,
+		},
+		"b": 1,
+		"c": 1,
+	}
+	ex, err := sanitize.New(scheme1)
+	if err != nil {
+		t.Fatal()
+	}
+	_, err = ex.Extract(dat)
+	if err == nil {
 		t.Fatal()
 	}
 }
