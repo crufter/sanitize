@@ -405,3 +405,30 @@ func TestConst(t *testing.T) {
 		t.Fatal(res)
 	}
 }
+
+func TestEq(t *testing.T) {
+	dat := map[string]interface{}{
+		"a": "example1234",
+	}
+	scheme := map[string]interface{}{
+		"a": map[string]interface{}{
+			"type": "eq",
+			"value": "example123",
+			"must": true,
+		},
+	}
+	res, err := sanitize.Fast(scheme, dat)
+	if err == nil {
+		t.Fatal()
+	}
+	dat1 := map[string]interface{}{
+		"a": "example123",
+	}
+	res, err = sanitize.Fast(scheme, dat1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["a"] != "example123" {
+		t.Fatal(res["a"])
+	}
+}

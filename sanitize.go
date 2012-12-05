@@ -4,7 +4,16 @@ import(
 	"strconv"
 	"fmt"
 	"github.com/opesun/numcon"
+	"reflect"
 )
+
+func Fast(sch, data map[string]interface{}) (map[string]interface{}, error) {
+	e, err := New(sch)
+	if err != nil {
+		return nil, err
+	}
+	return e.Extract(data)
+}
 
 type Scheme struct {
 	Must			bool
@@ -167,6 +176,14 @@ func conster(dat interface{}, s Scheme) (interface{}, error) {
 	return s.Specific["value"], nil
 }
 
+func eqer(dat interface{}, s Scheme) (interface{}, error) {
+	val := s.Specific["value"]
+	if reflect.DeepEqual(dat, val) {
+		return dat, nil
+	}
+	return nil, fmt.Errorf("%v is not equal to %v.", s.Key, val)
+}
+
 func New(scheme_map map[string]interface{}) (*Extractor, error) {
 	schemeMap, err := toSchemeMap(scheme_map)
 	if err != nil {
@@ -178,6 +195,7 @@ func New(scheme_map map[string]interface{}) (*Extractor, error) {
 		"bool":		booler,
 		"int":		inter,
 		"const":	conster,
+		"eq":		eqer,
 	}
 	return &Extractor{schemeMap, funcMap}, nil
 }
