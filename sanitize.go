@@ -163,6 +163,10 @@ func inter(dat interface{}, s Scheme) (interface{}, error) {
 	return val, nil
 }
 
+func conster(dat interface{}, s Scheme) (interface{}, error) {
+	return s.Specific["value"], nil
+}
+
 func New(scheme_map map[string]interface{}) (*Extractor, error) {
 	schemeMap, err := toSchemeMap(scheme_map)
 	if err != nil {
@@ -173,6 +177,7 @@ func New(scheme_map map[string]interface{}) (*Extractor, error) {
 		"float":	floater,
 		"bool":		booler,
 		"int":		inter,
+		"const":	conster,
 	}
 	return &Extractor{schemeMap, funcMap}, nil
 }

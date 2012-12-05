@@ -384,3 +384,24 @@ func TestIgnoreMust(t *testing.T) {
 		t.Fatal()
 	}
 }
+
+func TestConst(t *testing.T) {
+	dat := map[string]interface{}{}
+	scheme := map[string]interface{}{
+		"a": map[string]interface{}{
+			"type":		"const",
+			"value":	"example",
+		},
+	}
+	ex, err := sanitize.New(scheme)
+	if err != nil {
+		t.Fatal()
+	}
+	res, err := ex.Extract(dat)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["a"] != "example" {
+		t.Fatal(res)
+	}
+}
