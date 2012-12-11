@@ -184,6 +184,10 @@ func eqer(dat interface{}, s Scheme) (interface{}, error) {
 	return nil, fmt.Errorf("%v is not equal to %v.", s.Key, val)
 }
 
+func anier(dat interface{}, s Scheme) (interface{}, error) {
+	return dat, nil
+}
+
 func New(scheme_map map[string]interface{}) (*Extractor, error) {
 	schemeMap, err := toSchemeMap(scheme_map)
 	if err != nil {
@@ -196,6 +200,7 @@ func New(scheme_map map[string]interface{}) (*Extractor, error) {
 		"int":		inter,
 		"const":	conster,
 		"eq":		eqer,
+		"any":		anier,
 	}
 	return &Extractor{schemeMap, funcMap}, nil
 }
