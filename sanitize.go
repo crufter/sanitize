@@ -185,6 +185,9 @@ func eqer(dat interface{}, s Scheme) (interface{}, error) {
 }
 
 func anier(dat interface{}, s Scheme) (interface{}, error) {
+	if dat == nil {
+		return nil, fmt.Errof("any means anything but not nothing")
+	}
 	return dat, nil
 }
 
