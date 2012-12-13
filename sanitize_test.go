@@ -306,7 +306,7 @@ func TestSliceMustAllOrNothing(t *testing.T) {
 	}
 	ex, err := sanitize.New(scheme1)
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 	_, err = ex.Extract(dat)
 	if err == nil {
@@ -331,7 +331,7 @@ func TestShorthand1(t *testing.T) {
 	}
 	val, err := ex.Extract(dat)
 	if err != nil || len(val) != 2 {
-		t.Fatal()
+		t.Fatal(err, val)
 	}
 }
 
@@ -430,5 +430,25 @@ func TestEq(t *testing.T) {
 	}
 	if res["a"] != "example123" {
 		t.Fatal(res["a"])
+	}
+}
+
+func TestAnySlice(t *testing.T) {
+	dat := map[string]interface{}{
+		"a": []interface{}{1, 2, 3},
+	}
+	scheme := map[string]interface{}{
+		"a": map[string]interface{}{
+			"type": "any",
+			"slice": true,
+			"must": true,
+		},
+	}
+	res, err := sanitize.Fast(scheme, dat)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res["a"].([]interface{})) != 3 {
+		t.Fatal(res)
 	}
 }

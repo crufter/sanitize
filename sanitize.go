@@ -34,6 +34,7 @@ type Scheme struct {
 type SchemeMap map[string]Scheme
 
 func toScheme(a interface{}) (Scheme, error) {
+	empty := Scheme{}
 	s := Scheme{}
 	s.Specific = map[string]interface{}{}
 	ai, err := numcon.Int(a)
@@ -43,30 +44,62 @@ func toScheme(a interface{}) (Scheme, error) {
 	}
 	am, ok := a.(map[string]interface{})
 	if !ok {
-		return s, fmt.Errorf("Can't interpret scheme.")
+		return empty, fmt.Errorf("Can't interpret scheme.")
 	}
+	s.SliceMin = -1		// 0 is not good as a default value since it can be a legal one too.
+	s.SliceMax = -1
 	for i, v := range am {
 		switch i {
 		case "must":
-			s.Must = v.(bool)
+			s.Must, ok = v.(bool)
+			if !ok {
+				return empty, fmt.Errorf("Bad scheme: must should be a slice.")
+			}
 		case "type":
-			s.Type = v.(string)
+			s.Type, ok = v.(string)
+			if !ok {
+				return empty, fmt.Errorf("Bad scheme: type should be a string.")
+			}
 		case "slice":
-			s.Slice = v.(bool)
+			s.Slice, ok = v.(bool)
+			if !ok {
+				return empty, fmt.Errorf("Bad scheme: slice should be a bool.")
+			}
 		case "sliceMin":
-			s.SliceMin = numcon.IntP(v)
+			s.SliceMin, err = numcon.Int(v)
+			if err != nil {
+				return empty, fmt.Errorf("Bad scheme: sliceMin should be int compatible.")
+			}
 		case "sliceMax":
-			s.SliceMax = numcon.IntP(v)
+			s.SliceMax, err = numcon.Int(v)
+			if err != nil {
+				return empty, fmt.Errorf("Bad scheme: sliceMax should be int compatible.")
+			}
 		case "allOrNothing":
-			s.AllOrNothing = v.(bool)
+			s.AllOrNothing, ok = v.(bool)
+			if !ok {
+				return empty, fmt.Errorf("Bad scheme: allOrNothing should be a bool.")
+			}
 		case "min":
-			s.Min = numcon.Int64P(v)
+			s.Min, err = numcon.Int64(v)
+			if err != nil {
+				return empty, fmt.Errorf("Bad scheme: min should be int64 compatible.")
+			}
 		case "max":
-			s.Max = numcon.Int64P(v)
+			s.Max, err = numcon.Int64(v)
+			if err != nil {
+				return empty, fmt.Errorf("Bad scheme: max should be int64 compatible.")
+			}
 		case "regexp":
-			s.Regexp = v.(string)
+			s.Regexp, ok = v.(string)
+			if !ok {
+				return empty, fmt.Errorf("Bad scheme: regexp should be a string.")
+			}
 		case "ignore":
-			s.Ignore = v.(bool)
+			s.Ignore, ok = v.(bool)
+			if !ok {
+				return empty, fmt.Errorf("Bad scheme: ignore should be a string.")
+			}
 		default:
 			s.Specific[i] = v
 		}
@@ -228,7 +261,7 @@ func (e *Extractor) Extract(data map[string]interface{}) (map[string]interface{}
 			}
 			f := []interface{}{}
 			for _, v1 := range slice {
-				if len(f) > v.SliceMax {
+				if v.SliceMax > -1 && len(f) > v.SliceMax {
 					break
 				}
 				val, err := c_func(v1, v)
@@ -241,7 +274,7 @@ func (e *Extractor) Extract(data map[string]interface{}) (map[string]interface{}
 				}
 				f = append(f, val)
 			}
-			if len(f) < v.SliceMin {
+			if v.SliceMin > -1 && len(f) < v.SliceMin {
 				if v.Must {
 					return nil, fmt.Errorf("Slice length is too small.")
 				} else {
